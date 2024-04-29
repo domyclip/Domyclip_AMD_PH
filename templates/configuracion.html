@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard control</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-xxxxxx" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap">
+
+    <!--
+    <link rel="stylesheet" href="styles.css">
+    <link rel ="stylesheet" href="sidebar.css">
+    <link rel ="stylesheet" href="header.css">
+    <script src="Graficas.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='Dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='header_sidebar.css') }}">
+    <script src="{{ url_for('static', filename='Graficas.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+    <header class="header">
+        <!-- Menú lateral -->
+        <div class="top-menu">
+            <div class="Version">
+                <h4>Dashboard de bienes raices</h4>
+            </div>
+            <div class="logo">
+                <i class="fas fa-code"></i>
+                <h3>DomyClip</h3>
+            </div>
+            <div class="icon">
+                <i class="fas fa-user"></i>
+                <h3>{{ session['username'] }}</h3>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="circulo">
+            <div class="propietarios-section">
+                <div class="prop b1">
+                    <h2>Configuracion General de todo el edificio</h2>
+                </div>
+                <div class="prop b2">
+                    <h2>Configuración del Edificio</h2>
+                    <form action="/guardar_configuracion_edificio" method="post">
+                        <input type="hidden" name="edificio_id" value="{{ edificio_id }}">
+
+                        <label for="nombre-edificio">Nombre del Edificio:</label>
+                        <input type="text" id="nombre-edificio" name="nombre-edificio" value="{{ datos_edificio[19] }}" placeholder="Nombre completo con P.H, Condominio, loft, etc" required>
+                
+                        <label for="telefono-porteria">Teléfono de Portería:</label>
+                        <input type="text" id="telefono-porteria" name="telefono-porteria" value="{{ datos_edificio[22] }}" placeholder="Ejemplo: 300 300 55 55" required>
+
+                        <label for="direccion">Dirección:</label>
+                        <input type="text" id="direccion" name="direccion" value="{{ datos_edificio[21] }}" placeholder="Ejemplo: Calle 1 # 33-01" required>
+                
+                        <label for="nit">NIT:</label>
+                        <input type="text" id="nit" name="nit" value="{{ datos_edificio[23] }}" placeholder="Ejemplo: 800000000-1" required>
+
+                        <label for="porcentaje-interes">Porcentaje de Interés a Deudores(Expresión matemática):</label>
+                        <input type="text" id="porcentaje-interes" name="porcentaje-interes" value="{{ datos_edificio[24] }}" placeholder="Ejemplo: 0,15 (Porcentaje en expresión matemática)" required>
+
+                
+                        <button class="boton_edit" type="submit">Guardar Configuración</button>
+                    </form>
+                </div>
+                
+                <!-- Formulario para configurar los bancos -->
+                <div class="prop b3">
+                    <h2>Configuración de Bancos</h2>
+                    <form action="/guardar_configuracion_bancos" method="post">
+                        <input type="hidden" name="edificio_id" value="{{ edificio_id }}">
+
+                        <label for="banco1">Banco 1:</label>
+                        <input type="text" id="banco1" name="banco1" value="{{ datos_edificio[0] }}" placeholder="Nombre del Banco" required>
+                        <input type="number" id="banco1_num" name="banco1_num" value="{{ datos_edificio[1] }}" placeholder="#Cuenta Eje: 910-100000-00" required>
+                        <select name="banco1_tipo" id="banco1_tipo" required>
+                            <option value="ahorros" {% if datos_edificio[2] == 'ahorros' %}selected{% endif %}>Ahorros</option>
+                            <option value="corriente" {% if datos_edificio[2] == 'corriente' %}selected{% endif %}>Corriente</option>
+                        </select>
+                        <label for="banco2">Banco 2:</label>
+                        <input type="text" id="banco2" name="banco2" value="{{ datos_edificio[3] }}" placeholder="Nombre del Banco">
+                        <input type="number" id="banco2_num" name="banco2_num" value="{{ datos_edificio[4] }}" placeholder="#Cuenta Eje: 910-100000-00">
+                        <select name="banco2_tipo" id="banco2_tipo">
+                            <option value="ahorros" {% if datos_edificio[5] == 'ahorros' %}selected{% endif %}>Ahorros</option>
+                            <option value="corriente" {% if datos_edificio[5] == 'corriente' %}selected{% endif %}>Corriente</option>
+                        </select>
+                        <label for="banco3">Banco 3:</label>
+                        <input type="text" id="banco3" name="banco3" value="{{ datos_edificio[6] }}" placeholder="Nombre del Banco">
+                        <input type="number" id="banco3_num" name="banco3_num" value="{{ datos_edificio[7] }}" placeholder="#Cuenta Eje: 910-100000-00">
+                        <select name="banco3_tipo" id="banco3_tipo">
+                            <option value="ahorros" {% if datos_edificio[8] == 'ahorros' %}selected{% endif %}>Ahorros</option>
+                            <option value="corriente" {% if datos_edificio[8] == 'corriente' %}selected{% endif %}>Corriente</option>
+                        </select>
+                        <label for="banco4">Banco 4:</label>
+                        <input type="text" id="banco4" name="banco4" value="{{ datos_edificio[9] }}" placeholder="Nombre del Banco">
+                        <input type="number" id="banco4_num" name="banco4_num" value="{{ datos_edificio[10] }}" placeholder="#Cuenta Eje: 910-100000-00">
+                        <select name="banco4_tipo" id="banco4_tipo">
+                            <option value="ahorros" {% if datos_edificio[11] == 'ahorros' %}selected{% endif %}>Ahorros</option>
+                            <option value="corriente" {% if datos_edificio[11] == 'corriente' %}selected{% endif %}>Corriente</option>
+                        </select>
+                        <button class="boton_edit" type="submit">Guardar Bancos</button>
+                    </form>
+                </div>
+
+
+                <!-- Formulario para configurar la estructura -->
+                <div class="prop b4">
+                    <h2>Configuración de Estructura</h2>
+                    <form action="/guardar_configuracion_estructura" method="post">
+                        <p>Utiliza los botones para mover las estructuras de cobros:</p>
+
+                        <ul id="sortable">
+                            <li>
+                                <div class="estructura">
+                                    <label for="estrucRC1">CobroJuridico</label>
+                                    <div class="btn-container">
+                                        <button class="boton_subir" onclick="moveUp(this.parentNode.parentNode.parentNode)">Subir</button>
+                                        <button class="boton_bajar" onclick="moveDown(this.parentNode.parentNode.parentNode)">Bajar</button>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="estructura">
+                                    <label for="estrucRC2">Multa</label>
+                                    <div class="btn-container">
+                                        <button class="boton_subir" onclick="moveUp(this.parentNode.parentNode.parentNode)">Subir</button>
+                                        <button class="boton_bajar" onclick="moveDown(this.parentNode.parentNode.parentNode)">Bajar</button>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="estructura">
+                                    <label for="estrucRC3">Intereses</label>
+                                    <div class="btn-container">
+                                        <button class="boton_subir" onclick="moveUp(this.parentNode.parentNode.parentNode)">Subir</button>
+                                        <button class="boton_bajar" onclick="moveDown(this.parentNode.parentNode.parentNode)">Bajar</button>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="estructura">
+                                    <label for="estrucRC4">Administracion</label>
+                                    <div class="btn-container">
+                                        <button class="boton_subir" onclick="moveUp(this.parentNode.parentNode.parentNode)">Subir</button>
+                                        <button class="boton_bajar" onclick="moveDown(this.parentNode.parentNode.parentNode)">Bajar</button>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="estructura">
+                                    <label for="estrucRC5">Parqueaderos</label>
+                                    <div class="btn-container">
+                                        <button class="boton_subir" onclick="moveUp(this.parentNode.parentNode.parentNode)">Subir</button>
+                                        <button class="boton_bajar" onclick="moveDown(this.parentNode.parentNode.parentNode)">Bajar</button>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="estructura">
+                                    <label for="estrucRC6">Retroactivos</label>
+                                    <div class="btn-container">
+                                        <button class="boton_subir" onclick="moveUp(this.parentNode.parentNode.parentNode)">Subir</button>
+                                        <button class="boton_bajar" onclick="moveDown(this.parentNode.parentNode.parentNode)">Bajar</button>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="estructura">
+                                    <label for="estrucRC7">Extra</label>
+                                    <div class="btn-container">
+                                        <button class="boton_subir" onclick="moveUp(this.parentNode.parentNode.parentNode)">Subir</button>
+                                        <button class="boton_bajar" onclick="moveDown(this.parentNode.parentNode.parentNode)">Bajar</button>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <button class="boton_edit" type="submit">Guardar Estructura</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <section class="sidebar">
+        <div class="menu">
+            <a href="/estadisticas/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-chart-pie"></i>
+                <span>Estadísticas</span>
+            </a>                     
+            <a href="/propietarios/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-home"></i>
+                <span>Propietarios</span>
+            </a>
+            <a href="/cobros/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-money-check-alt"></i>
+                <span>Cobros</span>
+            </a>
+            <a href="/pagos/{{ edificio_id }}" class="enlace">
+                <i class="fas fas fa-credit-card"></i>
+                <span>pagos</span>
+            </a>
+            <a href="/pendiente/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-tasks"></i>
+                <span>Pendiente</span>
+            </a>
+            <a href="/contabilizado/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-book"></i>
+                <span>Contabilizado</span>
+            </a>
+            <a href="/informes/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-file-alt"></i>
+                <span>Informes</span>
+            </a>
+            <a href="/configuracion/{{ edificio_id }}" class="enlace activo">
+                <i class="fas fa-cogs"></i>
+                <span>Configuración</span>
+            </a>            
+
+            <div class="enlace" onclick="webdomotycort()">
+                <i class="fas fa-globe"></i>
+                <span>Nosotros</span>
+            </div>
+            <div class="cerrar">
+                <a href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Función para actualizar ambas gráficas
+
+        function webdomotycort() {
+            var url = 'https://yomar009.github.io/domyclip/';
+            window.open(url, '_blank');
+        }
+        function cambiarPestana(pestaña) {
+            window.location.href = `/dashboard/${nombre_edificio}/${pestaña}`;
+        }
+
+        function moveUp(item) {
+            if (item.previousElementSibling !== null) {
+                item.parentNode.insertBefore(item, item.previousElementSibling);
+            }
+        }
+    
+        function moveDown(item) {
+            if (item.nextElementSibling !== null) {
+                item.parentNode.insertBefore(item.nextElementSibling, item);
+            }
+        }
+    </script>
+</body>
+
+</html>

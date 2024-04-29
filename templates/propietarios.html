@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>dashboard control</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-xxxxxx" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap">
+
+    <!--
+    <link rel="stylesheet" href="styles.css">
+    <link rel ="stylesheet" href="sidebar.css">
+    <link rel ="stylesheet" href="header.css">
+    <script src="Graficas.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='Dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='header_sidebar.css') }}">
+    <script src="{{ url_for('static', filename='Graficas.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+    <header class="header">
+        <!-- Menú lateral -->
+        <div class="top-menu">
+            <div class="Version">
+                <h4>Dashboard de bienes raices</h4>
+            </div>
+            <div class="logo">
+                <i class="fas fa-code"></i>
+                <h3>DomyClip</h3>
+            </div>
+            <div class="icon">
+                <i class="fas fa-user"></i>
+                <h3>{{ session['username'] }}</h3>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="circulo">
+            <div class="titulo">
+                <h1>Nombre propiedad: {{ nombre_edificio }}</h1>
+            </div>
+            <div class="propietarios-section">
+                <!-- Botones de bloque en la parte superior -->
+                <div class="botones-bloque">
+                    {% for bloque in bloques %}
+                    <button class="bloque-btn" onclick="togglePropietarios({{ bloque }})">
+                        <div class="icon-container">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        Bloque {{ bloque }}
+                    </button>
+                    {% endfor %}
+                    <button class="bloque-btn-ven" onclick="abrirModalAgregarPropietario()">
+                        <div class="icon-container">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        Añadir Propietario
+                    </button> 
+                    <button class="bloque-btn-ven" onclick="abrirModalAgregarPropietarioLote()">
+                        <div class="icon-container">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        Añadir en lote
+                    </button> 
+                </div>
+    
+                <!-- Detalles de los propietarios -->
+                {% for bloque, propietarios in propietarios_por_bloque.items() %}
+                <div class="bloque" id="bloque{{ bloque }}" style="display: none;">
+                    <div class="propietarios" id="propietarios{{ bloque }}">
+                        <div class="row">
+                            {% for propietario in propietarios %}
+                            <div class="col-md-6">
+                                <div class="prop">
+                                    <div class="contenido">
+                                        <div class="texto">
+                                            <h3>{{ propietario[1] }} {{ propietario[2] }}</h3>
+                                            <p>Usuario ID: {{ propietario[0] }}</p>
+                                            <p>Apartamento: {{ propietario[3] }}</p>
+                                            <p>Bloque: {{ bloque }}</p>
+                                            <p>Cédula: {{ propietario[4] }}</p>
+                                            <p>Número Celular: <a href="#" class="whatsapp_link">{{ propietario[5] }}</a></p>
+                                            <p>Dirección: {{ propietario[6] }}</p>
+                                            <p>Parq: {{propietario[7] }}</p>
+                                            <p>Correo: <a href="mailto:{{ propietario[8] }}">{{ propietario[8] }}</a></p>
+                                            <p class="estado_propietario">Estado: {{ propietario[16]}}</p>
+                                        </div>
+                                        <div class="cont_boton">
+                                            <button class="boton" onclick="abrirModalEditarPropietario('{{ propietario[0] }}', '{{ propietario[1] }}', '{{ propietario[2] }}', '{{ propietario[3] }}', '{{ bloque }}', '{{ propietario[4] }}', '{{ propietario[5] }}', '{{ propietario[6] }}', '{{ propietario[7] }}', '{{ propietario[8] }}')">
+                                                <i class="fas fa-edit"></i> <!-- Icono de edición -->
+                                                Editar
+                                            </button>
+                                            <form action="/accion" method="post">
+                                                <input type="hidden" name="edificio_id" value="{{ edificio_id }}">
+                                                <input type="hidden" name="user_id" value="{{ propietario[0] }}"> <!-- Agregar user_id aquí -->
+                                                
+                                                <button class="boton_edit" type="submit" name="accion" value="activar">
+                                                    <i class="fas fa-check"></i> Activar
+                                                </button>
+                                                <button class="boton_edit" type="submit" name="accion" value="desactivar">
+                                                    <i class="fas fa-times"></i> Desactivar
+                                                </button>
+                                                <button class="boton_edit" type="submit" name="accion" value="eliminar">
+                                                    <i class="fas fa-trash-alt"></i> Eliminar
+                                                </button>                                                
+                                            </form>                                                                                    
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}                            
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+    
+
+<!-- Formulario emergente para editar datos del propietario -->
+<div id="editarPropietarioModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalEditarPropietario()">&times;</span>
+        <h2>Editar Propietario</h2>
+        <form id="formularioEditarPropietario" method="POST" action="/actualizar_propietario">
+            <!-- Campos del formulario para editar los datos del propietario -->
+            <input type="hidden" id="user_id" name="user_id">
+            <label for="nombres">Nombres:</label>
+            <input type="text" id="nombre" name="nombre">
+            <label for="apellidos">Apellidos:</label>
+            <input type="text" id="apellido" name="apellido">
+            <label for="apartamento">Apartamento:</label>
+            <input type="text" id="apartamento_id" name="apartamento_id">
+            <label for="bloque_id">Bloque:</label>
+            <input type="text" id="bloque_id" name="bloque_id">
+            <label for="cedula">Cédula:</label>
+            <input type="text" id="cedula" name="cedula">
+            <label for="numero_celular">Número Celular:</label>
+            <input type="text" id="celular" name="celular">
+            <label for="direccion">Dirección:</label>
+            <input type="text" id="direccion" name="direccion">
+            <label for="parq">parq:</label>
+            <input type="text" id="parq" name="parq">
+            <label for="correo">Correo:</label>
+            <input type="email" id="correo" name="correo">
+            <button class="boton" type="submit" onclick="guardarCambios()">Guardar Cambios</button>
+        </form>
+    </div>
+</div>
+<!-- Formulario emergente para agregar propietario -->
+<div id="agregarPropietarioModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalAgregarPropietario()">&times;</span>
+        <h2>Agregar Propietario</h2>
+        <form id="formularioAgregarPropietario" method="POST" action="/agregar_propietario">
+            <!-- Campos del formulario para agregar un nuevo propietario -->
+            <input type="hidden" id="edificio_id_modal" name="edificio_id">
+            <label for="nombre">Nombres:</label>
+            <input type="text" id="nombre" name="nombre" placeholder="Ejemplo: Juan Andres">
+            <label for="apellido">Apellidos:</label>
+            <input type="text" id="apellido" name="apellido" placeholder="Ejemplo: Pérez Zapata">
+            <label for="apartamento_id">Apartamento:</label>
+            <input type="text" id="apartamento_id" name="apartamento_id" placeholder="Ejemplo: 101">
+            <label for="bloque_id">Bloque:</label>
+            <input type="text" id="bloque_id" name="bloque_id" placeholder="Ejemplo Numeral del bloque: A o 1">
+            <label for="cedula">Cédula:</label>
+            <input type="text" id="cedula" name="cedula" placeholder="Ejemplo: 123456789">
+            <label for="celular">Número Celular:</label>
+            <input type="text" id="celular" name="celular" placeholder="Ejemplo: 300 300 55 55">
+            <label for="direccion">Dirección representante:</label>
+            <input type="text" id="direccion" name="direccion" placeholder="Ejemplo: Calle 123 #456">
+            <label for="parq">Parq:</label>
+            <input type="text" id="parq" name="parq" placeholder="Ejemplo: P32">
+            <label for="correo">Correo:</label>
+            <input type="email" id="correo" name="correo" placeholder="Ejemplo: ejemplo@correo.com">
+            
+            <!-- Campo para el estado -->
+            <input type="hidden" id="estado" name="estado" value="1"> <!-- Valor por defecto True -->
+            <button class="boton" type="submit">Agregar Propietario</button>
+        </form>
+    </div>
+</div>
+
+<!-- Formulario emergente para agregar propietario -->
+<div id="agregarPropietarioLoteModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalAgregarPropietarioLote()">&times;</span>
+        <h2>Agregar Propietario</h2>
+        <form id="formularioAgregarPropietario" method="POST" action="/agregar_propietarios" enctype="multipart/form-data">
+            <input type="hidden" id="edificio_id_modal" name="edificio_id" value="{{ edificio_id }}">
+            <p>Descargue la plantilla aquí:</p>
+            <a href="{{ url_for('static', filename=documento_plantilla) }}">Descargar plantilla</a>
+            <p>------------------</p>          
+            <input type="file" name="documento_pago" accept=".xlsx" required>
+            <button class="boton" type="submit">Agregar Propietarios</button>
+        </form>
+    </div>
+</div>
+
+
+
+<section class="sidebar">
+    <div class="menu">
+        <a href="/estadisticas/{{ edificio_id }}" class="enlace">
+            <i class="fas fa-chart-pie"></i>
+            <span>Estadísticas</span>
+        </a>                     
+        <a href="/propietarios/{{ edificio_id }}" class="enlace activo">
+            <i class="fas fa-home"></i>
+            <span>Propietarios</span>
+        </a>
+        <a href="/cobros/{{ edificio_id }}" class="enlace">
+            <i class="fas fa-money-check-alt"></i>
+            <span>Cobros</span>
+        </a>
+        <a href="/pagos/{{ edificio_id }}" class="enlace">
+            <i class="fas fas fa-credit-card"></i>
+            <span>pagos</span>
+        </a>
+        <a href="/pendiente/{{ edificio_id }}" class="enlace">
+            <i class="fas fa-tasks"></i>
+            <span>Pendiente</span>
+        </a>
+        <a href="/contabilizado/{{ edificio_id }}" class="enlace">
+            <i class="fas fa-book"></i>
+            <span>Contabilizado</span>
+        </a>
+        <a href="/informes/{{ edificio_id }}" class="enlace">
+            <i class="fas fa-file-alt"></i>
+            <span>Informes</span>
+        </a>
+        <a href="/configuracion/{{ edificio_id }}" class="enlace">
+            <i class="fas fa-cogs"></i>
+            <span>Configuración</span>
+        </a>            
+
+        <div class="enlace" onclick="webdomotycort()">
+            <i class="fas fa-globe"></i>
+            <span>Nosotros</span>
+        </div>
+        <div class="cerrar">
+            <a href="{{ url_for('logout') }}">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+    <script>
+
+
+
+        // Función para mostrar automáticamente los detalles del bloque 1 al cargar la página
+        window.onload = function () {
+            togglePropietarios(1);
+        }
+
+        function togglePropietarios(bloque) {
+            // Ocultar los detalles de todos los bloques excepto el bloque seleccionado
+            var bloques = document.querySelectorAll('.bloque');
+            for (var i = 0; i < bloques.length; i++) {
+                if (bloques[i].id === 'bloque' + bloque) {
+                    bloques[i].style.display = 'block';
+                } else {
+                    bloques[i].style.display = 'none';
+                }
+            }
+        }
+
+        document.querySelectorAll('.whatsapp_link').forEach(function(element) {
+            element.addEventListener('click', function(event) {
+                event.preventDefault(); // Evita que el enlace funcione normalmente
+                
+                // Obtén el número de teléfono y elimina los caracteres no numéricos
+                var numeroCelular = this.textContent.replace(/\D/g, '');
+                
+                // Abre WhatsApp con el número de teléfono
+                window.open('https://wa.me/57' + numeroCelular);
+            });
+        });
+        
+        
+
+        // Función para abrir el modal de edición del propietario
+        function abrirModalEditarPropietario(user_id, nombre, apellido, apartamentoId, bloque_id, cedula, celular, direccion, parq, correo) {
+            var modal = document.getElementById("editarPropietarioModal");
+            var form = document.getElementById("formularioEditarPropietario");
+
+            // Llenar los campos del formulario con los datos del propietario a editar
+            document.getElementById("user_id").value = user_id;
+            document.getElementById("nombre").value = nombre;
+            document.getElementById("apellido").value = apellido;
+            document.getElementById("apartamento_id").value = apartamentoId;
+            document.getElementById("bloque_id").value = bloque_id;
+            document.getElementById("cedula").value = cedula;
+            document.getElementById("celular").value = celular;
+            document.getElementById("direccion").value = direccion;
+            document.getElementById("parq").value = parq;
+            document.getElementById("correo").value = correo;
+
+            // Mostrar el modal
+            modal.style.display = "block";
+
+        }
+        function guardarCambios() {
+            // Cerrar el modal
+            cerrarModalEditarPropietario();
+            // Mostrar mensaje de confirmación
+            alert("Los cambios se realizarán una vez que se actualice la página.");
+        }
+        // Función para cerrar el modal de edición del propietario
+        function cerrarModalEditarPropietario() {
+            var modal = document.getElementById("editarPropietarioModal");
+            modal.style.display = "none";
+        }
+
+
+
+        // Función para abrir el modal de agregar propietario
+        function abrirModalAgregarPropietario() {
+            var modal = document.getElementById("agregarPropietarioModal");
+            var edificioId = "{{ edificio_id }}"; // Obtener el edificio_id del contexto de la plantilla
+
+            // Establecer el edificio_id en el campo oculto del formulario en el modal
+            document.getElementById("edificio_id_modal").value = edificioId;
+
+            modal.style.display = "block";
+        }
+        
+        // Función para cerrar el modal de agregar propietario
+        function cerrarModalAgregarPropietario() {
+            var modal = document.getElementById("agregarPropietarioModal");
+            modal.style.display = "none";
+        }
+
+        // Función para abrir el modal de agregar propietario
+        function abrirModalAgregarPropietarioLote() {
+            var modal = document.getElementById("agregarPropietarioLoteModal");
+            modal.style.display = "block";
+        }
+        
+        // Función para cerrar el modal de agregar propietario
+        function cerrarModalAgregarPropietarioLote() {
+            var modal = document.getElementById("agregarPropietarioLoteModal");
+            modal.style.display = "none";
+        }
+
+        // Función para redireccionar a una página externa
+        function webdomotycort() {
+            var url = 'https://yomar009.github.io/domyclip/';
+            window.open(url, '_blank');
+        }
+
+        // Cierra el modal si el usuario hace clic fuera de él
+        window.onclick = function(event) {
+            var modals = document.querySelectorAll('.modal');
+            modals.forEach(function(modal) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            });
+        }
+
+    </script>
+
+
+</body>
+
+</html>

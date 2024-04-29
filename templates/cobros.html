@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>dashboard control</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-xxxxxx" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap">
+
+    <!--
+    <link rel="stylesheet" href="styles.css">
+    <link rel ="stylesheet" href="sidebar.css">
+    <link rel ="stylesheet" href="header.css">
+    <script src="Graficas.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='Dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='header_sidebar.css') }}">
+    <script src="{{ url_for('static', filename='Graficas.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+    <header class="header">
+        <!-- Menú lateral -->
+        <div class="top-menu">
+            <div class="Version">
+                <h4>Dashboard de bienes raices</h4>
+            </div>
+            <div class="logo">
+                <i class="fas fa-code"></i>
+                <h3>DomyClip</h3>
+            </div>
+            <div class="icon">
+                <i class="fas fa-user"></i>
+                <h3>{{ session['username'] }}</h3>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="circulo">
+            <div class="titulo">
+                <h1>Crear y editar cobros: {{ nombre_edificio }}</h1>
+            </div>
+            <div class="prop b2">
+                <h2>Plantilla de Cuentas por Cobrar</h2>
+                <p>Encontraras a todos tus propietarios con valores predeterminados</p>
+            </div>
+            <div class="propietarios-section">
+                <!-- Botones de bloque en la parte superior -->
+                <div class="botones-bloque">
+                    {% for bloque in bloques %}
+                    <button class="bloque-btn" onclick="togglePropietarios({{ bloque }})">
+                        <div class="icon-container">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        Bloque {{ bloque }}
+                    </button>
+                    {% endfor %}
+                    <button class="bloque-btn" onclick="abrirModalCrearPlantilla('{{ edificio_id }}')">
+                        <div class="icon-container">
+                            <i class="far fa-calendar-alt"></i>
+                        </div>
+                        Cambiar fechas
+                    </button>                    
+                    <button class="bloque-btn" onclick="abrirModalCalcularInteresesExtra('{{ edificio_id }}')">
+                        <div class="icon-container">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        Calcular intereses
+                    </button>
+                    <!-- Botón para abrir el modal de CXC automático -->
+                    <button class="bloque-btn-ven" onclick="abrirModalCXCautomatico('{{ edificio_id }}')">
+                        <div class="icon-container">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        CXC automático
+                    </button>
+                </div>
+
+                <!-- Detalles de los propietarios -->
+                {% for bloque, propietarios in propietarios_por_bloque.items() %}
+                <div class="bloque" id="bloque{{ bloque }}" style="display: none;">
+                    <div class="propietarios" id="propietarios{{ bloque }}">
+                        <div class="row">
+                            {% for propietario in propietarios %}
+                            <div class="col-md-6">
+                                <div class="prop">
+                                    <div class="contenido">
+                                        <div class="texto">
+                                            <h3>{{ propietario[1] }} {{ propietario[2] }}</h3>
+                                            <p>Usuario ID: {{ propietario[0] }}</p>
+                                            <p>Apartamento: {{ propietario[3] }}</p>
+                                            <p>Bloque: {{ bloque }}</p>
+                                            <p>Cuota fija de Administracion: {{ propietario[9] }}</p>
+                                            <p>Cuota fija de Parqueadero: {{ propietario[10] }}</p>
+                                            <p>Cuota extra fija: {{ propietario[11] }}</p>
+                                            <p>Multa inasistencia AS: {{ propietario[12] }}</p>
+                                            <p>Intereses: {{ propietario[13] }}</p>
+                                            <p>Retroactivos: {{ propietario[14] }}</p>
+                                            <p>Cobro Jurídico: {{ propietario[15] }}</p>
+                                            <p>Fecha Emisión: {{ propietario[16] }}</p>
+                                            <p>Fecha Vencimiento: {{ propietario[17] }}</p>
+                                            <p class="estado_propietario">Estado: {{ propietario[18] }}</p>
+                                        </div>
+                                        
+                                        <div class="cont_boton">
+                                            <button class="boton" onclick="abrirModalEditarPropietario('{{ propietario[0] }}', '{{ propietario[9] }}', '{{ propietario[10] }}', '{{ propietario[11] }}', '{{ propietario[12] }}', '{{ propietario[13] }}', '{{ propietario[14] }}', '{{ propietario[15] }}', '{{ propietario[16] }}', '{{ propietario[17] }}', '{{ edificio_id }}')">
+                                                <i class="fas fa-edit"></i> <!-- Icono de edición -->
+                                                Editar
+                                            </button>
+                                            <!-- Agrega el cuenta de cobro manual -->
+                                            <form action="/crear_cxc_manual" method="post">
+                                                <input type="hidden" name="user_id" value="{{ propietario[0] }}">
+                                                <input type="hidden" name="edificio_id" value="{{ edificio_id }}"> 
+                                                <button class="boton" type="submit">
+                                                    <i class="far fa-file"></i> <!-- Icono para contabilizar -->
+                                                    Crear CXC Manual
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}                            
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+
+<!-- Formulario emergente para editar datos del propietario -->
+<div id="editarPropietarioModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalEditarPropietario()">&times;</span>
+        <h2>Editar Cobros</h2>
+        <form id="formularioEditarPropietario" method="POST" action="/actualizar_cobros">
+            <!-- Campos ocultos para enviar el user_id y los nuevos valores -->
+            <input type="hidden" id="modal_edificio_id" name="modal_edificio_id">
+            <input type="hidden" id="user_id" name="user_id">
+            <label for="cuotaADM">Valor de Administración:</label> <!-- Campo Admin -->
+            <input type="number" id="cuotaADM" name="cuotaADM">
+            <label for="cuotaPARQ">Valor de Parqueadero:</label> <!-- Campo Parq -->
+            <input type="number" id="cuotaPARQ" name="cuotaPARQ">
+            <label for="cuotaEXT">Valor de Cuota Extra:</label> <!-- Campo cuota extra-->
+            <input type="number" id="cuotaEXT" name="cuotaEXT">
+            <label for="multa">Multa:</label> <!-- Campo Multa-->
+            <input type="number" id="multa" name="multa">
+            <label for="intereses">Intereses:</label> <!-- Campo Intereses-->
+            <input type="number" id="intereses" name="intereses">
+            <label for="retroactivos">Retroactivos:</label> <!-- Campo Retroactivos-->
+            <input type="number" id="retroactivos" name="retroactivos">
+            <label for="cobroJuridico">Cobro Jurídico:</label> <!-- Campo CobroJuridico-->
+            <input type="number" id="cobroJuridico" name="cobroJuridico">
+            <label for="fecha_emision">Fecha Emisión:</label> <!-- Campo fecha_emision-->
+            <input type="date" id="fecha_emision" name="fecha_emision">
+            <label for="fecha_vencimiento">Fecha Vencimiento:</label> <!-- Campo fecha_vencimientos-->
+            <input type="date" id="fecha_vencimiento" name="fecha_vencimiento">
+            <button class="boton" type="submit">Guardar Cambios</button>
+        </form>
+    </div>
+</div>
+
+    <div id="crearPlantillaModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModalCrearPlantilla()">&times;</span>
+            <h2>Cambiar fechas de plantilla</h2>
+            <form id="formularioCrearPlantilla" method="POST" action="/fechas_plantilla">
+                <!-- Campo oculto para enviar el edificio_id -->
+                <input type="hidden" id="edificio_id" name="edificio_id">
+                <label for="fecha_emision">Fecha de Emisión:</label>
+                <input type="date" id="fecha_emision" name="fecha_emision">
+                <label for="fecha_vencimiento">Fecha de Vencimiento:</label>
+                <input type="date" id="fecha_vencimiento" name="fecha_vencimiento">
+                <button class="boton" type="submit" onclick="guardarPlantilla()">Cambiar Fechas</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="calcularInteresesExtraModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModalCalcularInteresesExtra()">&times;</span>
+            <h2>¿Desea calcular intereses?</h2>
+            <p>Esto realizará una búsqueda de todas las cuentas por cobrar en cada propietario, sumará los montos y calculará el porcentaje de intereses establecido en la configuración. Los intereses no se calcularán para los conceptos de "Cobro Jurídico" e "Intereses Acumulados".</p>            
+            <form id="calcularInteresesExtraForm" method="POST" action="/calcular_intereses">
+                <input type="hidden" id="edificio_id_intereses_extra" name="edificio_id_intereses_extra">
+                <button class="boton" type="submit">Si, Calcular intereses</button>
+            </form>
+        </div>
+    </div>
+
+     <!-- Modal para CXC automático -->
+    <div id="CXCautomaticoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModalCXCautomatico()">&times;</span>
+            <h2>¿Desea realizar CXC automático?</h2>
+            <p>Esto realizará una acción automática para las cuentas por cobrar.</p>
+            <p>Este botón creará las cuentas por cobrar según los valores definidos en la información del usuario. Estas cuentas quedarán por defecto en pendientes.</p>
+            <!-- Botón para realizar CXC automático -->
+            <form id="CXCautomaticoForm" method="POST" action="/contabilizar_automatico">
+                <input type="hidden" id="edificio_id_CXCautomatico" name="edificio_id_CXCautomatico">
+                <button class="boton" type="submit">Sí, realizar CXC automático</button>
+            </form>
+        </div>
+    </div>
+
+    <section class="sidebar">
+        <div class="menu">
+            <a href="/estadisticas/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-chart-pie"></i>
+                <span>Estadísticas</span>
+            </a>                     
+            <a href="/propietarios/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-home"></i>
+                <span>Propietarios</span>
+            </a>
+            <a href="/cobros/{{ edificio_id }}" class="enlace activo">
+                <i class="fas fa-money-check-alt"></i>
+                <span>Cobros</span>
+            </a>
+            <a href="/pagos/{{ edificio_id }}" class="enlace">
+                <i class="fas fas fa-credit-card"></i>
+                <span>pagos</span>
+            </a>
+            <a href="/pendiente/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-tasks"></i>
+                <span>Pendiente</span>
+            </a>
+            <a href="/contabilizado/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-book"></i>
+                <span>Contabilizado</span>
+            </a>
+            <a href="/informes/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-file-alt"></i>
+                <span>Informes</span>
+            </a>
+            <a href="/configuracion/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-cogs"></i>
+                <span>Configuración</span>
+            </a>            
+
+            <div class="enlace" onclick="webdomotycort()">
+                <i class="fas fa-globe"></i>
+                <span>Nosotros</span>
+            </div>
+            <div class="cerrar">
+                <a href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <script>
+
+        // Función para mostrar automáticamente los detalles del bloque 1 al cargar la página
+        window.onload = function () {
+            togglePropietarios(1);
+        }
+
+        function togglePropietarios(bloque) {
+            // Ocultar los detalles de todos los bloques excepto el bloque seleccionado
+            var bloques = document.querySelectorAll('.bloque');
+            for (var i = 0; i < bloques.length; i++) {
+                if (bloques[i].id === 'bloque' + bloque) {
+                    bloques[i].style.display = 'block';
+                } else {
+                    bloques[i].style.display = 'none';
+                }
+            }
+        }
+
+        function abrirModalEditarPropietario(user_id, cuotaADM, cuotaPARQ, cuotaEXT, multa, intereses, retroactivos, cobroJuridico, fecha_emision, fecha_vencimiento, edificio_id) {
+            var modal = document.getElementById("editarPropietarioModal");
+            var form = document.getElementById("formularioEditarPropietario");
+            
+            document.getElementById("modal_edificio_id").value = edificio_id;
+            // Llenar los campos del formulario con los datos del propietario a editar
+            document.getElementById("user_id").value = user_id;
+            document.getElementById("cuotaADM").value = cuotaADM; // Establecer el valor del campo "Admin"
+            document.getElementById("cuotaPARQ").value = cuotaPARQ; // Establecer el valor del campo "Parq"
+            document.getElementById("cuotaEXT").value = cuotaEXT; // Establecer el valor del campo "Cuota Extra"
+            document.getElementById("multa").value = multa; // Establecer el valor del campo "Multa"
+            document.getElementById("intereses").value = intereses; // Establecer el valor del campo "Intereses"
+            document.getElementById("retroactivos").value = retroactivos; // Establecer el valor del campo "Retroactivos"
+            document.getElementById("cobroJuridico").value = cobroJuridico; // Establecer el valor del campo "CobroJuridico"
+            document.getElementById("fecha_emision").value = fecha_emision; // Establecer el valor del campo "fecha_emision"
+            document.getElementById("fecha_vencimiento").value = fecha_vencimiento; // Establecer el valor del campo "fecha_vencimiento"
+            // Mostrar el modal
+            modal.style.display = "block";
+        }
+        function guardarCambios() {
+            // Cerrar el modal
+            cerrarModalEditarPropietario();
+            // Mostrar mensaje de confirmación
+            alert("Los cambios se realizarán una vez que se actualice la página.");
+        }
+        // Función para cerrar el modal de edición del propietario
+        function cerrarModalEditarPropietario() {
+            var modal = document.getElementById("editarPropietarioModal");
+            modal.style.display = "none";
+        }
+
+
+        function abrirModalCrearPlantilla(edificio_id) {
+            var modal = document.getElementById("crearPlantillaModal");
+            // Llenar el campo oculto con el edificio_id
+            document.getElementById("edificio_id").value = edificio_id;
+            // Mostrar el modal
+            modal.style.display = "block";
+        }
+        function guardarPlantilla() {
+            //Cerrar el modal
+            cerrarModalCrearPlantilla();
+            // Mostrar mensaje de confirmación
+            //alert("La plantilla ha sido creada."); // Mensaje de confirmación
+        }
+        function cerrarModalCrearPlantilla() {
+            var modal = document.getElementById("crearPlantillaModal");
+            // Cerrar el modal
+            modal.style.display = "none";
+        }
+
+        // Modal Intereses 
+        function abrirModalCalcularInteresesExtra(edificio_id) {
+            var modal = document.getElementById("calcularInteresesExtraModal");
+            // Llenar el campo oculto con el edificio_id
+            document.getElementById("edificio_id_intereses_extra").value = edificio_id;
+            // Mostrar el modal
+            modal.style.display = "block";
+        }        
+        
+        function cerrarModalCalcularInteresesExtra() {
+            var modal = document.getElementById("calcularInteresesExtraModal");
+            // Cerrar el modal
+            modal.style.display = "none";
+        }
+
+        // Función para abrir el modal de CXC automático
+        function abrirModalCXCautomatico(edificio_id) {
+            var modal = document.getElementById("CXCautomaticoModal");
+            // Llenar el campo oculto con el edificio_id
+            document.getElementById("edificio_id_CXCautomatico").value = edificio_id;
+            // Mostrar el modal
+            modal.style.display = "block";
+        }
+
+        // Función para cerrar el modal de CXC automático
+        function cerrarModalCXCautomatico() {
+            var modal = document.getElementById("CXCautomaticoModal");
+            // Limpiar el campo oculto edificio_id_CXCautomatico
+            document.getElementById("edificio_id_CXCautomatico").value = "";
+            // Cerrar el modal
+            modal.style.display = "none";
+        }
+        
+        // Cierra el modal si el usuario hace clic fuera de él
+        window.onclick = function(event) {
+            var modals = document.querySelectorAll('.modal');
+            modals.forEach(function(modal) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            });
+        }
+
+
+        // Función para actualizar ambas gráficas
+
+        function webdomotycort() {
+            var url = 'https://yomar009.github.io/domyclip/';
+            window.open(url, '_blank');
+        }
+        function cambiarPestana(pestaña) {
+            window.location.href = `/dashboard/${nombre_edificio}/${pestaña}`;
+        }
+    </script>
+</body>
+
+</html>

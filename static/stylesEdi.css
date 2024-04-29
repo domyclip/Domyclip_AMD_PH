@@ -1,0 +1,327 @@
+html {
+    height: 100%;
+    background-color: #f0f0f0; /* Cambié el color de fondo a un gris claro */
+    background-image: radial-gradient(at 88% 0%, hsla(270, 50%, 70%, 1) 0px, transparent 50%),
+                      radial-gradient(at 63% 46%, hsla(220, 70%, 70%, 1) 0px, transparent 50%),
+                      radial-gradient(at 95% 53%, hsla(60, 100%, 75%, 1) 0px, transparent 50%),
+                      radial-gradient(at 79% 83%, hsla(240, 50%, 70%, 1) 0px, transparent 50%),
+                      radial-gradient(at 74% 93%, hsla(30, 100%, 65%, 1) 0px, transparent 50%),
+                      radial-gradient(at 52% 13%, hsla(240, 70%, 70%, 1) 0px, transparent 50%),
+                      radial-gradient(at 30% 80%, hsla(60, 100%, 75%, 1) 0px, transparent 50%);
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    box-sizing: border-box;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: 0 24px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 10px; 
+    margin-top: 20px;
+    margin-bottom: 5px;
+    background-color: #ffffffc2; /* Cambiar el color de fondo a blanco semitransparente */
+    padding: 20px; /* Ajustar el relleno según sea necesario */
+}
+
+.header .icon {
+    margin: 0 30px; /* Separacion del icono del texto */
+}
+.header .icon i {
+    font-size: 70px; /* Tamaño del icono */
+    color: #1976D2; /* Color del icono */
+    
+}
+.header .text {
+    text-align: left;
+}
+.header .icon a {
+    text-decoration: none; /* Elimina el subrayado del enlace */
+}
+
+.header .icon :hover {
+    color: #344f69; /* Cambia el color al pasar el mouse sobre el enlace */
+}
+
+.header h1,
+.header h2 {
+    margin: 0;
+    font-size: 30px; /* Ajusta el tamaño según tu preferencia */
+}
+
+.header h1 span {
+    color: #1976D2; /* Color diferente para "Corp" */
+}
+
+.header h2 {
+    color: #333; /* Color del texto principal */
+}
+
+
+
+
+
+
+
+.insights {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly; /* Cambia a "center" para centrar las tarjetas horizontalmente */
+    margin-top: 5%;
+    margin-bottom: 5%;
+}
+
+.card {
+    display:  flex;
+    background-color: #ffffff;
+    box-shadow: 8px 8px 8px rgba(0.1, 0.1, 0.1, 0.1);
+    border-radius: 20px; /* Ancho de la ventana */
+    padding: 10px; /* Aumentado para más espacio vertical */
+    margin-bottom: 20px;
+    flex: 0 1 calc(33% - 2%); /* Ajustado para dejar más espacio entre tarjetas */
+    box-sizing: border-box;
+    transition: transform 0.3s ease-in-out;
+    cursor: pointer;
+
+    text-decoration: none; /* Elimina el subrayado */
+}
+
+.card .icon-container {
+    display: flex;
+    align-items: center;
+    margin-right: 4%; /* Ajusta el espacio entre el icono y el texto según tu preferencia */
+}
+
+.card .icon-container i {
+    font-size: 80px; /* Ajusta el tamaño del icono según tu preferencia */
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e4e4e4; /* Color de fondo del icono */
+}
+
+.card .info {
+    text-align: left;
+    width: 100%; /* Establece el ancho máximo del texto al 100% */
+}
+
+.card-1 .icon-container i {
+    color: #CFE8FF;
+    background-color: #1976D2;
+}
+
+.card-2 .icon-container i {
+    color: #BBF7D0;
+    background-color: #388E3C;
+}
+
+.card-3 .icon-container i {
+    color: #FFF2C6;
+    background-color: #FF9800;
+}
+
+.card-4 .icon-container i {
+    color: #FECDD3;
+    background-color: #E91E63;
+}
+
+.card-5 .icon-container i {
+    color: #d9c2ff;
+    background-color: #673AB7;
+}
+
+.card-6 .icon-container i {
+    color: #f9b5ff;
+    background-color: #ea07ff;
+}
+
+.card h3 {
+    margin: 0;
+    font-size: 20px; /* Tamaño del texto */
+    color: #333;
+}
+
+.card p {
+    margin: 0;
+    color: #777;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+
+/* Estilos para el modal de edición de propietarios */
+.modal {
+    display: none; /* Por defecto, el modal está oculto */
+    position: fixed; /* Permite que el modal esté posicionado encima del contenido */
+    z-index: 1000; /* Asegura que el modal esté encima de otros elementos */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Permite el desplazamiento si el contenido del modal es demasiado grande */
+    background-color: rgba(
+      0,
+      0,
+      0,
+      0.5
+    ); /* Fondo semi-transparente para enfocar la atención en el modal */
+}
+  
+.modal-content {
+    background-color: #fefefe; /* Fondo del modal */
+    margin: 5% auto; /* Centra el modal verticalmente y lo desplaza un poco hacia la derecha */
+    padding: 20px;
+    border: 1px solid #888; /* Borde del modal */
+    border-radius: 10px;
+    width: 50%; /* Ancho del modal */
+    max-width: 600px; /* Ancho máximo del modal */
+}
+  
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+  
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+  
+  /* Estilos para los campos del formulario en el modal */
+label {
+    margin-top: 10px;
+    display: block;
+}
+  
+input[type="text"],
+input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.bancos {
+    display: flex; /* Hace que los elementos dentro del contenedor se muestren en línea horizontal */
+    flex-wrap: wrap; /* Permite que los elementos se envuelvan a la siguiente línea si no caben en una sola línea */
+}
+
+.bancos label,
+.bancos input[type="text"],
+.bancos input[type="number"],
+.bancos select {
+    width: calc(50% - 5px); /* Calcula la mitad del ancho disponible */
+    margin-right: 5px; /* Añade un pequeño espacio entre cada elemento */
+    margin-bottom: 5px; /* Añade un pequeño espacio entre cada fila */
+}
+
+
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+li {
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 10px; /* Borde redondeado del botón */
+    background-color: #f4f4f4;
+    cursor: pointer;
+}
+.estructura {
+    display: flex; /* Hacemos que los elementos estén en línea */
+}
+.btn-container {
+    display: flex; /* Hacemos que los botones estén en línea */
+    margin-left: auto; /* Mueve los botones al extremo derecho */
+}
+
+.boton_subir {
+    background-color: #ff9b7c;
+    color: white; /* Color azul para el texto y el icono */
+    border: none; /* Quitamos el borde */
+    border-radius: 10px; /* Borde redondeado del botón */
+    padding: 5px 20px; /* Espaciado interno del botón */
+    margin: 0 5px; /* Espacio entre los botones */
+    font-size: 16px; /* Ajustamos el tamaño del texto */
+    cursor: pointer;
+    transition: color 0.3s ease-in-out; /* Transición suave */
+    display: flex; /* Para alinear el icono con el texto */
+    align-items: center; /* Centra verticalmente el contenido */
+    justify-content: center;
+    box-sizing: border-box;
+}
+.boton_bajar {
+    background-color: #ff8383;
+    color: white; /* Color azul para el texto y el icono */
+    border: none; /* Quitamos el borde */
+    border-radius: 10px; /* Borde redondeado del botón */
+    padding: 5px 20px; /* Espaciado interno del botón */
+    font-size: 16px; /* Ajustamos el tamaño del texto */
+    cursor: pointer;
+    transition: color 0.3s ease-in-out; /* Transición suave */
+    display: flex; /* Para alinear el icono con el texto */
+    align-items: center; /* Centra verticalmente el contenido */
+    justify-content: center;
+    box-sizing: border-box;
+}
+  
+.boton_edit {
+    background-color: #1976d2;
+    color: white; /* Color azul para el texto y el icono */
+    border: none; /* Quitamos el borde */
+    border-radius: 10px; /* Borde redondeado del botón */
+    padding: 8px 20px; /* Espaciado interno del botón */
+    font-size: 16px; /* Ajustamos el tamaño del texto */
+    cursor: pointer;
+    transition: color 0.3s ease-in-out; /* Transición suave */
+    display: flex; /* Para alinear el icono con el texto */
+    align-items: center; /* Centra verticalmente el contenido */
+    justify-content: center;
+    margin: 5px 5px;
+    box-sizing: border-box;
+}
+  
+/* Media query para pantallas más pequeñas, ajusta según sea necesario */
+@media (max-width: 768px) {
+    .insights {
+        justify-content: center;
+    }
+
+    .card {
+        flex: 0 1 calc(100% - 10%);
+    }
+    .header .icon {
+        margin-right: 10px; /* Separacion del icono del texto */
+    }
+    .header .icon i {
+        font-size: 40px; /* Tamaño del icono */
+    }
+    .header h2 {
+        font-size: 15px; /* Ajusta el tamaño según tu preferencia */
+    }
+    .header h1,
+    .header h2 {
+    font-size: 15px; /* Ajusta el tamaño según tu preferencia */
+    }
+
+
+}
