@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesint.css') }}">
+    <title>Ingreso a Domyclip</title>
+
+</head>
+<body>
+
+    <!-- Formulario de ingreso -->
+    <div id="login-form" class="login ">
+        <!-- Botones de cambio -->
+        <div class="toggle-buttons">
+            <button id="login-btn" class="active" onclick="toggleForm('login-form')">Ingreso</button>
+            <button id="register-btn-login" onclick="toggleForm('register-form')">Registro</button> <!-- Cambiado a id="register-btn-login" -->
+        </div>
+        <img src="{{ url_for('static', filename='bg.jpg') }}" alt="Fondo">
+        <h3>¡Bienvenido de nuevo a Domyclip!</h3>
+        <h2>Ingresa</h2>
+        <form action="/login" method="post" class="login-form">
+            <!-- Campo oculto para distinguir entre registro e inicio de sesión -->
+            <input type="hidden" name="login" value="login">
+            <input type="text" name="username" placeholder="Introduce tu Usuario">
+            <input type="password" name="password" placeholder="Introduce tu Contraseña" required>
+            <button type="submit">Ingresar</button>
+            <!-- Agregar enlace para abrir el modal -->
+            <a href="#" onclick="openModal()">¿Olvidaste tu contraseña?</a>
+        </form>
+        <div class="error">
+            <!-- Mensaje de error de registro -->
+            {% if login_error %}
+            <p>{{ login_error }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Formulario de registro -->
+    <div id="register-form" class="login hidden">
+        <!-- Botones de cambio -->
+        <div class="toggle-buttons">
+            <button id="login-btn-register" onclick="toggleForm('login-form')">Ingreso</button> <!-- Cambiado a id="login-btn-register" -->
+            <button id="register-btn" class="active" onclick="toggleForm('register-form')">Registro</button>
+        </div>
+        <img src="{{ url_for('static', filename='bg.jpg') }}" alt="Fondo">
+        <h3>Registro de Usuario</h3>
+        <h2>Regístrate</h2>
+        <form action="/login" method="POST" class="login-form">
+            <!-- Campo oculto para distinguir entre registro e inicio de sesión -->
+            <input type="hidden" name="registro" value="registro">
+            <input type="text" name="username" placeholder="Crea tu Usuario" required>
+            <input type="email" name="email" placeholder="Tu Correo Electrónico" required>
+            <input type="password" name="password" placeholder="Introduce la Contraseña" required>
+            <input type="password" name="confirm_password" placeholder="Confirmación de Contraseña" required>
+            <button type="submit">Registrarse</button>
+        </form>
+        <div class="error">
+            <!-- Mensaje de error de registro -->
+            {% if registro_error %}
+            <p>{{ registro_error }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+
+
+    <!-- Modal -->
+    <div id="myModal" class="modal">
+        <!-- Contenido del modal -->
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Restablecer Contraseña</h2>
+            <p>Introduce tu correo electrónico para restablecer la contraseña:</p>
+            <input type="email" class="email-input" placeholder="Correo Electrónico" required>
+            <button class="modal-button" onclick="sendResetEmail()">Enviar</button>
+        </div>
+    </div>
+    
+
+    <script>
+        function toggleForm(formId) {
+            var loginForm = document.getElementById('login-form');
+            var registerForm = document.getElementById('register-form');
+    
+            if (formId === 'login-form') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+            }
+        }
+    
+        window.addEventListener('DOMContentLoaded', (event) => {
+            // Obtener los elementos de los formularios
+            var loginForm = document.getElementById('login-form');
+            var registerForm = document.getElementById('register-form');
+    
+            // Verificar si hay errores de inicio de sesión o registro
+            var loginError = "{{ login_error }}";
+            var registroError = "{{ registro_error }}";
+    
+            // Mostrar el formulario correspondiente si hay un error
+            if ((loginError && loginError !== "None") || (registroError && registroError !== "None")) {
+                // Mostrar el formulario de inicio de sesión si hay un error de inicio de sesión
+                if (loginError && loginError !== "None") {
+                    loginForm.classList.remove('hidden');
+                    registerForm.classList.add('hidden');
+                }
+                // Mostrar el formulario de registro si hay un error de registro
+                else if (registroError && registroError !== "None") {
+                    loginForm.classList.add('hidden');
+                    registerForm.classList.remove('hidden');
+                }
+            }
+        });
+    
+        function openModal() {
+            var modal = document.getElementById('myModal');
+            modal.style.display = 'block';
+        }
+    
+        function closeModal() {
+            var modal = document.getElementById('myModal');
+            modal.style.display = 'none';
+        }
+    
+        function sendResetEmail() {
+            var email = document.querySelector('.email-input').value;
+            // Aquí puedes agregar la lógica para enviar el correo de restablecimiento de contraseña
+            console.log('Se enviará un correo de restablecimiento a:', email);
+        }
+
+    </script>
+
+    
+    
+    
+
+</body>
+</html>

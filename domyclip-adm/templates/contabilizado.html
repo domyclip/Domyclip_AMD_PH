@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>dashboard control</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-xxxxxx" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap">
+
+    <!--
+    <link rel="stylesheet" href="styles.css">
+    <link rel ="stylesheet" href="sidebar.css">
+    <link rel ="stylesheet" href="header.css">
+    <script src="Graficas.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='Dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='header_sidebar.css') }}">
+    <script src="{{ url_for('static', filename='Graficas.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+    <header class="header">
+        <!-- Menú lateral -->
+        <div class="top-menu">
+            <div class="Version">
+                <h4>Dashboard de bienes raices</h4>
+            </div>
+            <div class="logo">
+                <i class="fas fa-code"></i>
+                <h3>DomyClip</h3>
+            </div>
+            <div class="icon">
+                <i class="fas fa-user"></i>
+                <h3>{{ session['username'] }}</h3>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="circulo">
+            <div class="propietarios-section">
+                <!-- Contenido de la sección "Terreno" -->
+                <div class="prop b1">
+                    <div class="bloque-horizontal">
+                        
+                        <div class="filtrado">
+                            <!-- Formulario de filtrado -->
+                            <h2>Editar Cuentas por cobrar Contabilizados</h2>
+                            <p>Utiliza un recuadro o varios para la búsqueda</p>
+                            <form action="/contabilizado/{{ edificio_id }}" method="get" class="search-form">
+                                <div class="form-row">
+                                    <label for="estado">Estado:</label>
+                                    <select name="estado" id="estado" class="styled-select">
+                                        <option value="Contabilizado">Contabilizado</option>
+                                        <option value="Anulado">Anulado</option>
+                                    </select>
+                                </div>
+                                <div class="form-row">
+                                    <label for="tipo_cuenta">Tipo de búsqueda:</label>
+                                    <select name="tipo_cuenta" id="tipo_cuenta" class="styled-select">
+                                        <option value="CXC_AMD">AMD Cuentas por Cobrar</option>
+                                        <option value="RC_AMD">AMD Resivo de caja</option>
+                                        <option value="CXC_ZC">ZC Cuentas por Cobrar</option>
+                                        <option value="RC_ZC">ZC Resivo de caja</option>
+                                    </select>
+                                </div>
+                                <div class="form-row">
+                                    <label for="num_contabilizado">Contabilizado:</label>
+                                    <input type="number" id="num_contabilizado" name="num_contabilizado" placeholder="Numero de CXC o RC" class="styled-input">
+                                </div>
+                                <div class="form-row">
+                                    <label for="user_id">Usuario ID:</label>
+                                    <input type="number" id="user_id" name="user_id" placeholder="ID del usuario" class="styled-input">
+                                </div>
+                                <div class="form-row">
+                                    <label for="fecha_emision">Fecha Emisión:</label>
+                                    <input type="date" id="fecha_emision" name="fecha_emision" class="styled-input">
+                                </div>
+                                <div class="form-row">
+                                    <button class="boton_edit" type="submit">
+                                        <i class="fas fa-search"></i> Buscar listado
+                                    </button>
+                                </div>
+                            </form>
+                        </div>                        
+                        <div class="resumen-cuentas">
+                            <h2>Resumen del listado</h2>
+                            <div class="scrollable-content">
+                                {% for cuenta in cuentas_por_cobrar %}
+                                    <li>Cuenta por Cobrar: 0{{ cuenta.id_CXC }} </li>
+                                {% endfor %}
+                                {% for recibo in recibos_caja %}
+                                    <li>Recibo de Caja: 0{{ recibo.id_RC }}</li>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                <div class="bloque-horizontal-feb">
+                    <!-- Mostrar cuentas por cobrar -->
+                    {% for cuenta in cuentas_por_cobrar %}
+                    <div class="bloque_feb">
+                        <div class="detalle_bus">
+                            <div class="texto">
+                                <h2>Cuenta por cobrar: 0{{ cuenta.id_CXC }}</h2>
+                                <p>Fecha de Emisión: {{ cuenta.fecha_emision }} </p>
+                                <p>Fecha de Vencimiento: {{ cuenta.fecha_vencimiento }}</p>
+                                <p>Correo: {{ cuenta.correo }}</p>
+                                <p class="estado_propietario">Estado: {{ cuenta.estado }}</p>
+                            </div>
+                            <div class="texto">
+                                <h2>Propietario</h2>
+                                <p>{{ cuenta.usuario }}</p>
+                                <p>Apartamento: {{ cuenta.apto }}</p>
+                                <p>Bloque: {{ cuenta.bloque }}</p>
+                                <p>Usuario ID: {{ cuenta.user_id }}</p>
+                            </div>
+                            <div class="cont_boton">
+                                <form action="/cambio_estado" method="post">
+                                    <input type="hidden" name="cuenta" value="CXC">
+                                    <input type="hidden" name="id_cuenta" value="{{ cuenta.id_CXC }}">
+                                    <input type="hidden" name="user_id" value="{{ cuenta.user_id }}">
+                                    <input type="hidden" name="edificio_id" value="{{ edificio_id }}">
+                                    <input type="hidden" name="pagina" value="contabilizado">
+                                    <input type="hidden" name="estado" value="Anulado"> 
+                                    <button class="boton" type="submit">
+                                        <i class="fas fa-check"></i> <!-- Icono para contabilizar -->
+                                        Anular
+                                    </button>
+                                </form>
+                                <form action="/enviar_rc" method="post">
+                                    <button class="boton" type="submit">
+                                        <i class="fas fa-paper-plane"></i> <!-- Icono para eliminar -->
+                                        Enviar
+                                    </button>
+                                </form>
+                                <form action="/enviar_rc" method="post">
+                                    <button class="boton" type="submit">
+                                        <i class="fas fa-download"></i> <!-- Icono para eliminar -->
+                                        Descargar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    
+                        <div class="contenedor-lista-formulario">
+                            <div class="cartas-container">
+                                {% for detalle in cuenta.detalles %}
+                                <div class="carta">
+                                    <ul>
+                                        <li>
+                                            <!-- {{ detalle.tipo }}, -->
+                                            <!-- Descripción:  -->{{ detalle.descripcion }}
+                                        </li>
+                                        <li>
+                                            Monto: {{ detalle.monto }}
+                                            <!-- Pagado: {{ detalle.pagado }},
+                                            Total: {{ detalle.total }} -->
+                                        </li>
+                                    </ul>
+                                    <!-- Botón para abrir el modal -->
+                                    <button class="boton_edit" onclick="abrirModalEditarDetalle({{ detalle.detalle_id }}, '{{ detalle.descripcion }}', {{ detalle.monto }})">
+                                        <i class="fas fa-edit"></i>Editar Detalle
+                                    </button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="bloque-horizontal-feb">
+                    <!-- Mostrar cuentas por cobrar -->
+                    {% for recibo in recibos_caja %}
+                    <div class="bloque_feb">
+                        <div class="detalle_bus">
+                            <div class="texto">
+                                <h2>Recibo de Caja: 0{{ recibo.id_RC }}</h2>
+                                <p>Fecha del pago: {{ recibo.fecha }}</p>
+                                <p>Descripción: {{ recibo.descripcion }}</p>
+                                <p>Tipo de Pago: {{ recibo.tipopago }}</p>
+                                <p>Valor: {{ recibo.valor }}</p>
+                                <p class="estado_propietario">Estado: {{ recibo.estado_recibo }}</p>
+                            </div>
+                            <div class="texto">
+                                <h2>Propietario</h2>
+                                <p>{{ recibo.usuario}}</p>
+                                <p>Apartamento: {{ recibo.apto }}</p>
+                                <p>Bloque: {{ recibo.bloque }}</p>
+                                <p>Usuario ID: {{ recibo.user_id }}</p>
+                                <p>Correo: {{ recibo.correo }}</p>
+                            </div>
+                            <div class="cont_boton">
+                                <form action="/cambio_estado" method="post">
+                                    <input type="hidden" name="cuenta" value="RC">
+                                    <input type="hidden" name="id_cuenta" value="{{ recibo.id_RC }}">
+                                    <input type="hidden" name="user_id" value="{{ recibo.user_id }}">
+                                    <input type="hidden" name="edificio_id" value="{{ edificio_id }}"> 
+                                    <input type="hidden" name="pagina" value="contabilizado">
+                                    <input type="hidden" name="estado" value="Anulado"> 
+                                    <button class="boton" type="submit">
+                                        <i class="fas fa-check"></i> <!-- Icono para contabilizar -->
+                                        Anular
+                                    </button>
+                                </form>
+                                <form action="/enviar_rc" method="post">
+                                    <button class="boton" type="submit">
+                                        <i class="fas fa-paper-plane"></i> <!-- Icono para eliminar -->
+                                        Enviar
+                                    </button>
+                                </form>
+                                <form action="/enviar_rc" method="post">
+                                    <button class="boton" type="submit">
+                                        <i class="fas fa-download"></i> <!-- Icono para eliminar -->
+                                        Descargar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <!-- <h3>Detalles:</h3> -->
+                        <div class="contenedor-lista-detalle">
+                            <div class="cartas-container">
+                                {% for detalle in recibo.detalles %}
+                                <div class="carta">
+                                    <ul>
+                                        <li>Cruse CXC: 0{{ detalle.id_CXC }}</li>
+                                        <!-- <p>Detalle CXC Afectado: {{ detalle.cruceID }}</p> -->
+                                        <li>Cruse: {{ detalle.detalleID}}</li>
+                                        <li>Monto: {{ detalle.monto }}</li>
+                                        <li class="estado_propietario">Estado: {{ detalle.estado_detalle }}</li>
+                                    </ul>
+                                    <!-- Botón para abrir el modal -->
+                                    <button class="boton_edit" onclick="abrirModalEditarDetalle({{ detalle.detalle_id }}, '{{ detalle.descripcion }}', {{ detalle.monto }})">
+                                        <i class="fas fa-edit"></i>Editar Detalle
+                                    </button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <!--<div class="prop b2">
+                    <h2>Contabilidad</h2>
+                    <p>Contenido específico para la sección "contabilidad" en estrcutura.</p>
+                </div> -->
+            </div>
+        </div>
+    </main>
+
+    <section class="sidebar">
+        <div class="menu">
+            <a href="/estadisticas/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-chart-pie"></i>
+                <span>Estadísticas</span>
+            </a>                     
+            <a href="/propietarios/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-home"></i>
+                <span>Propietarios</span>
+            </a>
+            <a href="/cobros/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-money-check-alt"></i>
+                <span>Cobros</span>
+            </a>
+            <a href="/pagos/{{ edificio_id }}" class="enlace">
+                <i class="fas fas fa-credit-card"></i>
+                <span>pagos</span>
+            </a>
+            <a href="/pendiente/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-tasks"></i>
+                <span>Pendiente</span>
+            </a>
+            <a href="/contabilizado/{{ edificio_id }}" class="enlace activo">
+                <i class="fas fa-book"></i>
+                <span>Contabilizado</span>
+            </a>
+            <a href="/informes/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-file-alt"></i>
+                <span>Informes</span>
+            </a>
+            <a href="/configuracion/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-cogs"></i>
+                <span>Configuración</span>
+            </a>            
+
+            <div class="enlace" onclick="webdomotycort()">
+                <i class="fas fa-globe"></i>
+                <span>Nosotros</span>
+            </div>
+            <div class="cerrar">
+                <a href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+<!-- Modal para editar detalle de CXC -->
+<div id="editarDetalleModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalEditarDetalle()">&times;</span>
+        <h2>Editar Detalle</h2>
+        <form id="formularioEditarDetalle" action="/editar_detalle_cxc" method="POST">
+            <input type="hidden" id="detalle_id" name="detalle_id">
+            <input type="hidden" name="edificio_id" value="{{ edificio_id }}">
+            <div class="formulario">
+                <div class="from_imput">
+                    <input type="text" id="descripcion" name="descripcion" placeholder="Editar Descripcion">
+                    <input type="number" id="monto" name="monto" placeholder="Editar monto">
+                </div>
+                <div class="from_bon">
+                    <button class="boton_edit" type="submit"><i class="fas fa-check"></i>Guardar Cambios</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+    <script>
+        // Función para actualizar ambas gráficas
+
+        function webdomotycort() {
+            var url = 'https://yomar009.github.io/domyclip/';
+            window.open(url, '_blank');
+        }
+        function cambiarPestana(pestaña) {
+            window.location.href = `/dashboard/${nombre_edificio}/${pestaña}`;
+        }
+
+        function abrirModalEditarDetalle(detalle_id, descripcion, monto) {
+            var modal = document.getElementById('editarDetalleModal');
+            modal.style.display = 'block';
+            
+            // Llena los campos del formulario con la información del detalle
+            document.getElementById('detalle_id').value = detalle_id;
+            document.getElementById('descripcion').value = descripcion;
+            document.getElementById('monto').value = monto;
+        }
+    
+        function cerrarModalEditarDetalle() {
+            var modal = document.getElementById('editarDetalleModal');
+            modal.style.display = 'none';
+        }
+    
+        // Cierra el modal si el usuario hace clic fuera de él
+        window.onclick = function(event) {
+            var modals = document.querySelectorAll('.modal');
+            modals.forEach(function(modal) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

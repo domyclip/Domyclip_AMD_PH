@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dashboard control</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-xxxxxx" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap">
+
+    <!--
+    <link rel="stylesheet" href="styles.css">
+    <link rel ="stylesheet" href="sidebar.css">
+    <link rel ="stylesheet" href="header.css">
+    <script src="Graficas.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='Dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='header_sidebar.css') }}">
+    <script src="{{ url_for('static', filename='Graficas.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+    <header class="header">
+        <!-- Menú lateral -->
+        <div class="top-menu">
+            <div class="Version">
+                <h4>Dashboard de bienes raices</h4>
+            </div>
+            <div class="logo">
+                <i class="fas fa-code"></i>
+                <h3>DomyClip</h3>
+            </div>
+            <div class="icon">
+                <i class="fas fa-user"></i>
+                <h3>{{ session['username'] }}</h3>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="circulo">
+            <div class="titulo">
+                <h1>Nombre propiedad: {{ nombre_edificio }}</h1>
+            </div>
+            <div class="estadísticas-section">  <!-- Contenido de la sección "Analíticas" -->
+                <div class="est a1">
+                    <canvas id="grafica-amb" class="grafica"></canvas>
+                </div>
+                <div class="est a2">
+                    <canvas id="grafico-pagos" class="grafica"></canvas>
+                </div>
+                <div class="est a3">
+                    <h2>Información</h2>
+                    <p>Contenido específico para la sección .</p>
+                </div>
+                <div class="est a4">
+                    <h2>Información</h2>
+                    <p>Contenido específico para la sección .</p>
+
+                </div>
+                <div class="est a5">
+                    <h2>Información</h2>
+                    <p>Contenido específico para la sección .</p>
+                </div>
+                <div class="est a6">
+                    <!-- Primer botón -->
+                    <button class="bloque-btn" onclick="activarDispositivo('activar_riego', this)">
+                        <i class="fas fa-tint"></i>
+                        Funcion (10min)
+                    </button>
+
+                    <!-- Segundo botón -->
+                    <button class="bloque-btn" onclick="activarDispositivo('activar_ventilacion', this)">
+                        <i class="fas fa-fan"></i>
+                        Funcion (10min)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <section class="sidebar">
+        <div class="menu">
+            <a href="/estadisticas/{{ edificio_id }}" class="enlace activo">
+                <i class="fas fa-chart-pie"></i>
+                <span>Estadísticas</span>
+            </a>                     
+            <a href="/propietarios/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-home"></i>
+                <span>Propietarios</span>
+            </a>
+            <a href="/cobros/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-money-check-alt"></i>
+                <span>Cobros</span>
+            </a>
+            <a href="/pagos/{{ edificio_id }}" class="enlace">
+                <i class="fas fas fa-credit-card"></i>
+                <span>pagos</span>
+            </a>
+            <a href="/pendiente/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-tasks"></i>
+                <span>Pendiente</span>
+            </a>
+            <a href="/contabilizado/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-book"></i>
+                <span>Contabilizado</span>
+            </a>
+            <a href="/informes/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-file-alt"></i>
+                <span>Informes</span>
+            </a>
+            <a href="/configuracion/{{ edificio_id }}" class="enlace">
+                <i class="fas fa-cogs"></i>
+                <span>Configuración</span>
+            </a>            
+
+            <div class="enlace" onclick="webdomotycort()">
+                <i class="fas fa-globe"></i>
+                <span>Nosotros</span>
+            </div>
+            <div class="cerrar">
+                <a href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            inicializarGraficaAmbiental();
+            inicializarGraficaPagos();
+        });
+
+        function webdomotycort() {
+            var url = 'https://yomar009.github.io/domyclip/';
+            window.open(url, '_blank');
+        }
+
+        //Funcion de botones Riego y Ventilazion 
+        function activarDispositivo(ruta, boton) {
+            fetch('/' + ruta)
+                .then(response => response.text())
+                .then(resultado => {
+                    // Actualiza el texto del botón con el resultado
+                    boton.innerHTML = '<i class="fas fa-check"></i> ' + resultado;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+    </script>
+</body>
+
+</html>
