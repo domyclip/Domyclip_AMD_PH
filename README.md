@@ -1,2 +1,5 @@
-# Domyclip_AMD_PH
-Software de Propiedad Horizontal 
+# admincort
+
+especilistas en codigo para administracion en especificaciones propiedad horiontal
+
+hola

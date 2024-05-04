@@ -3,6 +3,18 @@ import sqlite3
 import pandas as pd
 from datetime import datetime
 
+import sqlite3
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+import os
+# Registrar la segunda fuente
+pdfmetrics.registerFont(TTFont('PoppinsRegular', 'domyclip-adm/static/Poppins-Regular.ttf'))
+# Registrar la tercera fuente
+pdfmetrics.registerFont(TTFont('PoppinsBold', 'domyclip-adm/static/Poppins-Bold.ttf'))
+
+
 # Importa la función para obtener la fecha actual
 def obtener_fecha_actual():
     return datetime.today().strftime("%Y-%m-%d")
@@ -449,7 +461,7 @@ def obtener_recibos_caja_fecha(edificio_id, estado, fecha_emision=None, user_id_
         cursor.execute("""
             SELECT RC.id_RC, RC.user_id, RC.fecha, RC.descripcion, RC.tipopago, RC.valor, RC.estado AS estado_recibo,
                    RD.detalleID, RD.ID AS detalle_id, RD.cruceID, RD.id_CXC, RD.monto, RD.estado AS estado_detalle,
-                   P.nombres, P.apellidos, P.apto, P.bloque
+                   P.nombres, P.apellidos, P.apto, P.bloque, P.correo
             FROM ReciboCaja AS RC
             LEFT JOIN RCDetalles AS RD ON RC.id_RC = RD.id_RC
             LEFT JOIN Propietarios AS P ON RC.user_id = P.user_id
@@ -459,7 +471,7 @@ def obtener_recibos_caja_fecha(edificio_id, estado, fecha_emision=None, user_id_
         cursor.execute("""
             SELECT RC.id_RC, RC.user_id, RC.fecha, RC.descripcion, RC.tipopago, RC.valor, RC.estado AS estado_recibo,
                    RD.detalleID, RD.ID AS detalle_id, RD.cruceID, RD.id_CXC, RD.monto, RD.estado AS estado_detalle,
-                   P.nombres, P.apellidos, P.apto, P.bloque
+                   P.nombres, P.apellidos, P.apto, P.bloque, P.correo
             FROM ReciboCaja AS RC
             LEFT JOIN RCDetalles AS RD ON RC.id_RC = RD.id_RC
             LEFT JOIN Propietarios AS P ON RC.user_id = P.user_id
@@ -469,7 +481,7 @@ def obtener_recibos_caja_fecha(edificio_id, estado, fecha_emision=None, user_id_
         cursor.execute("""
             SELECT RC.id_RC, RC.user_id, RC.fecha, RC.descripcion, RC.tipopago, RC.valor, RC.estado AS estado_recibo,
                    RD.detalleID, RD.ID AS detalle_id, RD.cruceID, RD.id_CXC, RD.monto, RD.estado AS estado_detalle,
-                   P.nombres, P.apellidos, P.apto, P.bloque
+                   P.nombres, P.apellidos, P.apto, P.bloque, P.correo
             FROM ReciboCaja AS RC
             LEFT JOIN RCDetalles AS RD ON RC.id_RC = RD.id_RC
             LEFT JOIN Propietarios AS P ON RC.user_id = P.user_id
@@ -479,7 +491,7 @@ def obtener_recibos_caja_fecha(edificio_id, estado, fecha_emision=None, user_id_
         cursor.execute("""
             SELECT RC.id_RC, RC.user_id, RC.fecha, RC.descripcion, RC.tipopago, RC.valor, RC.estado AS estado_recibo,
                    RD.detalleID, RD.ID AS detalle_id, RD.cruceID, RD.id_CXC, RD.monto, RD.estado AS estado_detalle,
-                   P.nombres, P.apellidos, P.apto, P.bloque
+                   P.nombres, P.apellidos, P.apto, P.bloque, P.correo
             FROM ReciboCaja AS RC
             LEFT JOIN RCDetalles AS RD ON RC.id_RC = RD.id_RC
             LEFT JOIN Propietarios AS P ON RC.user_id = P.user_id
@@ -490,7 +502,7 @@ def obtener_recibos_caja_fecha(edificio_id, estado, fecha_emision=None, user_id_
     
     recibos_caja = {}
     for recibo in recibos:
-        id_RC, user_id, fecha, descripcion, tipopago, valor, estado_recibo, detalleID, detalle_id, cruceID, id_CXC, monto, estado_detalle, nombres, apellidos, apto, bloque = recibo
+        id_RC, user_id, fecha, descripcion, tipopago, valor, estado_recibo, detalleID, detalle_id, cruceID, id_CXC, monto, estado_detalle, nombres, apellidos, apto, bloque, correo = recibo
         nombre_usuario = f"{nombres} {apellidos}"
         if id_RC not in recibos_caja:
             recibos_caja[id_RC] = {
@@ -504,6 +516,7 @@ def obtener_recibos_caja_fecha(edificio_id, estado, fecha_emision=None, user_id_
                 'usuario': nombre_usuario,
                 'apto': apto,
                 'bloque': bloque,
+                'correo': correo,
                 'detalles': []
             }
         if detalle_id is not None:  # Si hay detalles asociados
@@ -1205,7 +1218,7 @@ def contabilizar():
         return redirect(f'/{pagina}/{edificio_id}/')
 
     
-def contabilizar_cxc(id_CXC, user_id, estado):
+def contabilizar_cxc(id_CXC, user_id, edificio_id, estado):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
 
@@ -1213,8 +1226,8 @@ def contabilizar_cxc(id_CXC, user_id, estado):
     cursor.execute('''
         UPDATE CuentasCobrar
         SET estado = ?
-        WHERE id_CXC = ? AND user_id = ?
-    ''', (estado, id_CXC, user_id))
+        WHERE id_CXC = ? AND user_id = ? AND edificio_id = ?
+    ''', (estado, id_CXC, user_id, edificio_id))
 
     # Actualizar el estado en la tabla CXCDetalle
     cursor.execute('''
@@ -1223,10 +1236,15 @@ def contabilizar_cxc(id_CXC, user_id, estado):
         WHERE id_CXC = ? AND user_id = ?
     ''', (estado, id_CXC, user_id))
 
+
+
+    #create_pdf_CXC(id_CXC, user_id, edificio_id)
+
     print(id_CXC)
 
     conn.commit()
     conn.close()
+
 def contabilizar_rc(id_cuenta, user_id, estado):
     print(id_cuenta,user_id,estado)
 
@@ -1242,7 +1260,35 @@ def contabilizar_lista_cxc():
         # Contabilizar las cuentas por cobrar de la lista
         for cxc in lista_cxc:
             id_CXC, user_id = map(int, cxc.split('-'))
-            contabilizar_cxc(id_CXC, user_id, estado)
+            contabilizar_cxc(id_CXC, user_id, edificio_id, estado)
+            # Llamar a la función para crear el PDF
+            create_pdf_with_reportlab("CXC.pdf", id_CXC, user_id, edificio_id)
+
+        # Redirigir a una página de éxito o a donde desees
+        return redirect(f'/pendiente/{edificio_id}/')
+    
+    elif request.form['accion'] == 'enviar':
+        # Obtener la lista de cuentas por cobrar desde el formulario
+        lista_cxc = request.form.getlist('lista_cxc')
+        estado = 'Contabilizado'
+
+        # Contabilizar las cuentas por cobrar de la lista
+        for cxc in lista_cxc:
+            id_CXC, user_id = map(int, cxc.split('-'))
+            contabilizar_cxc(id_CXC, user_id, edificio_id, estado)
+
+        # Redirigir a una página de éxito o a donde desees
+        return redirect(f'/pendiente/{edificio_id}/')
+    
+    elif request.form['accion'] == 'descargar':
+        # Obtener la lista de cuentas por cobrar desde el formulario
+        lista_cxc = request.form.getlist('lista_cxc')
+        estado = 'Contabilizado'
+
+        # Contabilizar las cuentas por cobrar de la lista
+        for cxc in lista_cxc:
+            id_CXC, user_id = map(int, cxc.split('-'))
+            contabilizar_cxc(id_CXC, user_id, edificio_id, estado)
 
         # Redirigir a una página de éxito o a donde desees
         return redirect(f'/pendiente/{edificio_id}/')
@@ -1259,7 +1305,7 @@ def contabilizar_lista_cxc():
         # Redirigir a una página de éxito o a donde desees
         return redirect(f'/pendiente/{edificio_id}/')
 
-
+#def create_pdf_CXC(id_CXC, user_id, edificio_id):
 
 @app.route('/crear_deuda', methods=['POST'])
 def crear_multa():
@@ -1311,7 +1357,7 @@ def editar_detalle_cxc_route():
 
 # Ruta para la página de contabilidad
 @app.route('/pendiente/<int:edificio_id>/')
-def contabilidad(edificio_id):
+def pendiente(edificio_id):
     if 'username' in session:  # Verificar si el usuario ha iniciado sesión
         username = session['username']  # Obtener el nombre de usuario de la sesión
     else:
@@ -1523,6 +1569,193 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
 
+
+
+#-------------------------------------      pdf    ------------------------------------------------
+
+# Función para crear el PDF utilizando ReportLab
+def create_pdf_with_reportlab(filename, id_CXC, user_id, edificio_id):
+    # Obtener los datos para el PDF
+    datos_factura = create_pdf_CXC(id_CXC, user_id, edificio_id)
+    
+    # Crear el documento PDF
+    c = canvas.Canvas(filename, pagesize=letter)
+
+    # Agregar imagen de fondo
+    background_image = "domyclip-adm/static/CXC simple azul.jpg"  # Ruta de la imagen de fondo
+    c.drawImage(background_image, 0, 0, width=letter[0], height=letter[1])
+
+    # Agregar icono en la parte superior derecha
+    icon_image = "domyclip-adm/static/bg.jpg"  # Ruta de la imagen del icono
+    c.drawImage(icon_image, 50, letter[1] - 140, width=100, height=100)
+
+    # Establecer color y tipografía del texto
+    c.setFillColorRGB(0.17, 0.27, 0.74)  # Color negro
+    c.setFont("PoppinsBold", 20)  # Tipografía Helvetica, tamaño de fuente 12
+
+    # Agregar detalles del edificio
+    c.drawString(180, 722, datos_factura['nombre_edificio'])
+    c.drawString(180, 692, "NIT: " + datos_factura['nit'])
+
+    c.setFillColorRGB(0, 0, 0)  # Color negro
+    c.setFont("PoppinsRegular", 12)  # Tipografía Helvetica, tamaño de fuente 12
+
+    # Agregar información del propietario
+    c.drawString(75, 552, datos_factura['nombres_propietario'])
+    c.drawString(75, 539, "CC: " + datos_factura['cedula_propietario'])
+    c.drawString(75, 526, "Cel: " + datos_factura['celular_propietario'])
+    c.drawString(75, 513, "Dir: " + datos_factura['direccion_propietario'])
+    c.drawString(75, 500, "Correo: " + datos_factura['correo_propietario'])
+
+    # Agregar información del administrador
+    c.drawString(340, 552, datos_factura['nombre_amd_edificio'])
+    c.drawString(340, 539, "CC: " + datos_factura['cedula_amd_edificio'])
+    c.drawString(340, 526, "Cel: " + datos_factura['celular_amd_edificio'])
+    c.drawString(340, 513, "Fecha: " + datos_factura['fecha_emision'])
+    c.drawString(340, 500, "Correo: " + datos_factura['correo_amd_edificio'])
+
+    # Agregar detalles de cuentas por cobrar
+    y = 440
+    for item in datos_factura['CXCDetalle']:
+        c.drawString(90, y, str(item['cuenta']))
+        c.drawString(220, y, item['descripcion'])
+        c.drawString(500, y, str(item['monto']))
+        y -= 20
+
+    c.setFillColorRGB(0, 0, 0)  # Color negro
+    c.setFont("PoppinsBold", 18)  # Tipografía Helvetica, tamaño de fuente 12
+    # Agregar detalles de CXC
+    c.drawString(392, 603, "# 0" + str(datos_factura['id_CXC']))
+    c.drawString(190, 90, datos_factura['fecha_vencimiento'])
+    c.drawString(490, 213, str(datos_factura['total']))
+
+    c.setFont("PoppinsRegular", 10)  # Tipografía Helvetica, tamaño de fuente 12
+
+    # Agregar valores de campos adicionales
+    c.drawString(160, 275, datos_factura['administracion'])
+    c.drawString(160, 264, datos_factura['parqueadero'])
+    c.drawString(160, 253, datos_factura['retroactivo'])
+    c.drawString(160, 242, datos_factura['multas'])
+    c.drawString(160, 231, datos_factura['intereses'])
+    c.drawString(160, 221, datos_factura['cobro_juridico'])
+    c.setFillColorRGB(0, 0, 0)  # Color negro
+    c.drawString(160, 209, datos_factura['total_final'])
+
+    c.setFillColorRGB(0.17, 0.27, 0.74)  # Color Azul
+    c.setFont("PoppinsRegular", 8)  # Tipografía Helvetica, tamaño de fuente 12
+    # Agregar detalles de los bancos
+    x_position = 80  # Posición horizontal para la información de los bancos
+    for banco in datos_factura['bancos']:
+        c.drawString(x_position, 160, f"Banco: {banco['banco']}")
+        c.drawString(x_position, 145, f"Tipo: {banco['tipo']}")
+        c.drawString(x_position, 130, f"Cuenta: {banco['cuenta']}")
+        x_position += 110  # Incrementar la posición horizontal para el próximo banco
+
+    # Guardar el PDF
+    carpeta_contabilidad = "contabilidad"
+    carpeta_edificio = os.path.join(carpeta_contabilidad, str(edificio_id))
+    if not os.path.exists(carpeta_edificio):
+        os.makedirs(carpeta_edificio)
+    nombre_archivo = f"CXC{id_CXC}.pdf"
+    ruta_guardado = os.path.join(carpeta_edificio, nombre_archivo)
+    c.save()
+    os.rename(filename, ruta_guardado)
+
+
+def create_pdf_CXC(id_CXC, user_id, edificio_id):
+    DATABASE = 'database.db'
+    conexion = sqlite3.connect(DATABASE)
+    cursor = conexion.cursor()
+    
+    # Consulta para obtener los detalles del edificio
+    cursor.execute("""
+    SELECT nombre, nit, ciudad, nombreAMD, cedula, celular, correo, Banco1, Cuenta1, tipo1, Banco2, Cuenta2, tipo2, 
+    Banco3, Cuenta3, tipo3, Banco4, Cuenta4, tipo4
+    FROM Edificios 
+    WHERE edificio_id = ?
+    """, (edificio_id,))
+    resultado_edificio = cursor.fetchone()
+    
+    # Consulta para obtener los detalles del propietario
+    cursor.execute("""
+    SELECT apto, bloque, nombres, apellidos, parq, cedula, celular, direccion, correo
+    FROM Propietarios 
+    WHERE edificio_id = ? AND user_id = ?
+    """, (edificio_id, user_id))
+    resultado_propietario = cursor.fetchone()
+
+    # Consulta para obtener los detalles de la cuenta por cobrar
+    cursor.execute("""
+    SELECT id_CXC, fecha_emision, fecha_vencimiento 
+    FROM CuentasCobrar 
+    WHERE edificio_id = ? AND user_id = ?
+    """, (edificio_id, user_id))
+    resultado_cuentas_cobrar = cursor.fetchone()
+
+    # Consulta para obtener los detalles de la cuenta por cobrar
+    cursor.execute("""
+    SELECT descripcion, monto, tipo
+    FROM CXCDetalle 
+    WHERE id_CXC = ? AND user_id = ?
+    """, (id_CXC, user_id))
+    resultado_detalle_cxc = cursor.fetchall()
+
+    # Calcular el total como la suma de los montos
+    total = sum(row[1] for row in resultado_detalle_cxc)
+
+    pendiente  = {
+        'administracion': '$50',
+        'parqueadero': '$20',
+        'retroactivo': '$30',
+        'multas': '$40',
+        'intereses': '$10',
+        'cobro_juridico': '$20',
+        'total_final': '$670'
+    }
+
+    conexion.close()
+    
+    # Devolver los resultados como un diccionario
+    return {
+        'nombre_edificio': resultado_edificio[0],
+        'nit': resultado_edificio[1],
+        'ciudad': resultado_edificio[2],
+        'nombre_amd_edificio': resultado_edificio[3],
+        'cedula_amd_edificio': resultado_edificio[4],
+        'celular_amd_edificio': resultado_edificio[5],
+        'correo_amd_edificio': resultado_edificio[6],
+        'apto': resultado_propietario[0],
+        'bloque': resultado_propietario[1],
+        'nombres_propietario': resultado_propietario[2],
+        'apellidos_propietario': resultado_propietario[3],
+        'parq': resultado_propietario[4],
+        'cedula_propietario': resultado_propietario[5],
+        'celular_propietario': resultado_propietario[6],
+        'direccion_propietario': resultado_propietario[7],
+        'correo_propietario': resultado_propietario[8],
+        'id_CXC': resultado_cuentas_cobrar[0],
+        'fecha_emision': resultado_cuentas_cobrar[1],
+        'fecha_vencimiento': resultado_cuentas_cobrar[2],
+        'total': total,
+        'CXCDetalle': [{'cuenta': "0", 'descripcion': row[0], 'monto': row[1], 'tipo': row[2]} for row in resultado_detalle_cxc],
+        'bancos': [
+            {'banco': resultado_edificio[7], 'tipo': resultado_edificio[9], 'cuenta': resultado_edificio[8]},
+            {'banco': resultado_edificio[10], 'tipo': resultado_edificio[12], 'cuenta': resultado_edificio[11]},
+            {'banco': resultado_edificio[13], 'tipo': resultado_edificio[15], 'cuenta': resultado_edificio[14]},
+            {'banco': resultado_edificio[16], 'tipo': resultado_edificio[18], 'cuenta': resultado_edificio[17]}
+        ],
+        'administracion': pendiente['administracion'],
+        'parqueadero': pendiente['parqueadero'],
+        'retroactivo': pendiente['retroactivo'],
+        'multas': pendiente['multas'],
+        'intereses': pendiente['intereses'],
+        'cobro_juridico': pendiente['cobro_juridico'],
+        'total_final': pendiente['total_final']
+    }
+
+
+
 if __name__ == '__main__':
     # Iniciar la aplicación Flask
+    #app.run(debug=True, port=5000)
     app.run(debug=True, host='0.0.0.0')

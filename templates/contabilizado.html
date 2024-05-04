@@ -159,12 +159,16 @@
                                         </li>
                                         <li>
                                             Monto: {{ detalle.monto }}
-                                            <!-- Pagado: {{ detalle.pagado }},
-                                            Total: {{ detalle.total }} -->
+                                        </li>
+                                        <li>
+                                            Pagado: {{ detalle.pagado }}
+                                        </li>
+                                        <li>
+                                            Total: {{ detalle.total }}
                                         </li>
                                     </ul>
                                     <!-- Botón para abrir el modal -->
-                                    <button class="boton_edit" onclick="abrirModalEditarDetalle({{ detalle.detalle_id }}, '{{ detalle.descripcion }}', {{ detalle.monto }})">
+                                    <button class="boton_edit" onclick="abrirModalEditarDetalle('{{ detalle.detalle_id }}', '{{ detalle.descripcion }}', '{{ detalle.monto }}')">
                                         <i class="fas fa-edit"></i>Editar Detalle
                                     </button>
                                 </div>
@@ -231,12 +235,12 @@
                                     <ul>
                                         <li>Cruse CXC: 0{{ detalle.id_CXC }}</li>
                                         <!-- <p>Detalle CXC Afectado: {{ detalle.cruceID }}</p> -->
-                                        <li>Cruse: {{ detalle.detalleID}}</li>
+                                        <li>{{ detalle.detalleID}}</li>
                                         <li>Monto: {{ detalle.monto }}</li>
                                         <li class="estado_propietario">Estado: {{ detalle.estado_detalle }}</li>
                                     </ul>
                                     <!-- Botón para abrir el modal -->
-                                    <button class="boton_edit" onclick="abrirModalEditarDetalle({{ detalle.detalle_id }}, '{{ detalle.descripcion }}', {{ detalle.monto }})">
+                                    <button class="boton_edit" onclick="abrirModalEditarDetalle('{{ detalle.detalle_id }}', '{{ detalle.descripcion }}', '{{ detalle.monto }}')">
                                         <i class="fas fa-edit"></i>Editar Detalle
                                     </button>
                                 </div>

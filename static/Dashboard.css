@@ -303,6 +303,11 @@ select {
   display: flex;
 }
 
+.carta li,
+.detalle_items li {
+  padding: 0px 0px 0px 15px; /* Espacio alrededor del contenedor */
+}
+
 /* Estilo para el formulario */
 .detalle {
   background-color: var(--color-fondo-circulo);

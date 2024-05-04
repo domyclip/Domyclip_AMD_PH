@@ -163,20 +163,18 @@
                                 <div>
                                     {% for detalle in cuenta.detalles %}
                                     <div class="detalle_items">
-                                        <div>
                                           <li>
                                             <!-- {{ detalle.tipo }}, -->
-                                            Descripción: {{ detalle.descripcion }}
+                                            {{ detalle.descripcion }}
                                           </li>
                                           <li>
                                             Monto: {{ detalle.monto }}
                                             <!-- Pagado: {{ detalle.pagado }},
                                             Total: {{ detalle.total }} -->
                                           </li>
-                                        </div>
                                         <div class="botones-container">
                                           <!-- Botón para abrir el modal -->
-                                          <button class="boton_edit" onclick="abrirModalEditarDetalle({{ detalle.detalle_id }}, '{{ detalle.descripcion }}', {{ detalle.monto }})">
+                                          <button class="boton_edit" onclick="abrirModalEditarDetalle('{{ detalle.detalle_id }}', '{{ detalle.descripcion }}', '{{ detalle.monto }}')">
                                             <i class="fas fa-edit"></i>Editar item
                                           </button>                                        
                                           <div class="eliminar-form-container">
@@ -202,15 +200,15 @@
                                             <input type="text" name="descripcion" placeholder="Descripción del item">
                                             <input type="number" name="monto" placeholder="Monto del item">
                                             <div class="botones-container">
-                                                <button class="boton_edit" type="submit" name="tipo" value="MUL">
+                                                <button class="boton_edit" type="submit" name="tipo" value="Multa">
                                                   <i class="fas fa-plus"></i>
                                                   Agregar Multa
                                                 </button>
-                                                <button class="boton_edit" type="submit" name="tipo" value="EXT">
+                                                <button class="boton_edit" type="submit" name="tipo" value="Extra">
                                                   <i class="fas fa-plus"></i>
                                                   Agregar Cuota Extra
                                                 </button>
-                                                <button class="boton_edit" type="submit" name="tipo" value="EXT">
+                                                <button class="boton_edit" type="submit" name="tipo" value="Retroactivos">
                                                   <i class="fas fa-plus"></i>
                                                   Retroactivos
                                                 </button>
@@ -280,12 +278,14 @@
         <div class="modal-content">
             <span class="close" onclick="cerrarModalEditarDetalle()">&times;</span>
             <h2>Editar Detalle</h2>
+            <p>Solo cambiará la descripción del item más no el tipo del item</p>
+            <!-- Mostrar el tipo del detalle -->
             <form id="formularioEditarDetalle" method="POST" action="/editar_detalle_cxc">
                 <input type="hidden" id="detalle_id" name="detalle_id">
                 <input type="hidden" name="edificio_id" value="{{ edificio_id }}">
                 <div class="formulario">
                     <div class="from_imput">
-                        <input type="text" id="descripcion" name="descripcion" placeholder="Editar Descripcion">
+                        <input type="text" id="descripcion" name="descripcion" placeholder="Editar Descripción">
                         <input type="number" id="monto" name="monto" placeholder="Editar monto">
                     </div>
                     <div class="from_bon">
@@ -294,7 +294,7 @@
                 </div>
             </form>
         </div>
-    </div>
+    </div>    
     
     <script>
         // Función para actualizar ambas gráficas
@@ -308,7 +308,7 @@
         }
 
 
-        function abrirModalEditarDetalle(detalle_id, descripcion, monto) {
+        function abrirModalEditarDetalle(detalle_id, descripcion, monto, tipo) {
             var modal = document.getElementById('editarDetalleModal');
             modal.style.display = 'block';
             
@@ -316,7 +316,7 @@
             document.getElementById('detalle_id').value = detalle_id;
             document.getElementById('descripcion').value = descripcion;
             document.getElementById('monto').value = monto;
-        }
+        }        
     
         function cerrarModalEditarDetalle() {
             var modal = document.getElementById('editarDetalleModal');
